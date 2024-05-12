@@ -79,8 +79,8 @@ def parse_args(parser):
     parser.add_argument('--n-workers', type=int, default=16)
     
     # Language
-    parser.add_argument('--symbol_set', default='english_basic',
-                        choices=['english_basic', 'english_mandarin_basic'],
+    parser.add_argument('--symbol_set', default='vietnamese_basic',
+                        choices=['english_basic', 'english_mandarin_basic', 'vietnamese_basic'],
                         help='Symbols in the dataset')
     return parser
 
@@ -114,7 +114,7 @@ def main():
         dataset = TTSDataset(
             args.dataset_path,
             filelist,
-            text_cleaners=['english_cleaners_v2'],
+            text_cleaners=['vietnamese_cleaner'],
             n_mel_channels=args.n_mel_channels,
             symbol_set=args.symbol_set,
             p_arpabet=0.0,

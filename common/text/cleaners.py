@@ -13,12 +13,13 @@ hyperparameter. Some cleaners are English-specific. You'll typically want to use
 '''
 
 import re
-from .abbreviations import normalize_abbreviations
+from .abbreviations import normalize_abbreviations, expand_abbreviations_vi
 from .acronyms import normalize_acronyms, spell_acronyms
 from .datestime import normalize_datestime
 from .letters_and_numbers import normalize_letters_and_numbers
 from .numerical import normalize_numbers
 from .unidecoder import unidecoder
+from . import numerical_vi as nvi
 
 
 # Regular expression matching whitespace:
@@ -99,4 +100,12 @@ def english_cleaners_v2(text):
     text = collapse_whitespace(text)
     # compatibility with basic_english symbol set
     text = re.sub(r'/+', ' ', text)
+    return text
+
+def vietnamese_cleaner(text):
+    text = convert_to_ascii(text)
+    text = text.lower()
+    text = nvi.normalize_numbers(text)
+    text = expand_abbreviations_vi(text)
+    text = collapse_whitespace(text)
     return text

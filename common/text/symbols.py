@@ -5,10 +5,12 @@ Defines the set of symbols used in text input to the model.
 
 The default is a set of ASCII characters that works well for English or text that has been run through Unidecode. For other data, you can modify _characters. See TRAINING_DATA.md for details. '''
 from .cmudict import valid_symbols
+from .vietnamese import valid_symbols_vi
 
 
 # Prepend "@" to ARPAbet symbols to ensure uniqueness (some are the same as uppercase letters):
 _arpabet = ['@' + s for s in valid_symbols]
+_vietnamese_phonemes = ["@" + s for s in valid_symbols_vi]
 
 
 def get_symbols(symbol_set='english_basic'):
@@ -43,6 +45,13 @@ def get_symbols(symbol_set='english_basic'):
         _special = '-'
         _letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
         symbols = list(_pad + _special + _punctuation + _letters) + _arpabet + _mandarin_phonemes + _chinese_punctuation
+    elif symbol_set == "vietnamese_basic":
+        _pad = "_"
+        _punctuation = "!'(),.:;? "
+        _special = "-"
+        _letters = 'aAàÀảẢãÃáÁạẠăĂằẰẳẲẵẴắẮặẶâÂầẦẩẨẫẪấẤậẬbBcCdDđĐeEèÈẻẺẽẼéÉẹẸêÊềỀểỂễỄếẾệỆfFgGhHiIìÌỉỈĩĨíÍịỊjJkKlLmMnNoOòÒỏỎõÕóÓọỌôÔồỒổỔỗỖốỐộỘơƠờỜởỞỡỠớỚợỢpPqQrRsStTuUùÙủỦũŨúÚụỤưƯừỪửỬữỮứỨựỰvVwWxXyYỳỲỷỶỹỸýÝỵỴzZ'
+        _silences = ["@sp", "@spn", "@sil"]
+        symbols = list(_pad + _special + _punctuation + _letters) + _silences + _vietnamese_phonemes
     else:
         raise Exception("{} symbol set does not exist".format(symbol_set))
 

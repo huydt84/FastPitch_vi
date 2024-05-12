@@ -36,6 +36,7 @@ import torch
 import torch.nn.functional as F
 from scipy import ndimage
 from scipy.stats import betabinom
+import resampy
 
 import common.layers as layers
 from common.text.text_processing import get_text_processing
@@ -233,8 +234,9 @@ class TTSDataset(torch.utils.data.Dataset):
 
     def get_mel(self, filename):
         if not self.load_mel_from_disk:
-            audio, sampling_rate = load_wav_to_torch(filename)
+            audio, sampling_rate = load_wav_to_torch(filename, force_sampling_rate=self.stft.sampling_rate)
             if sampling_rate != self.stft.sampling_rate:
+                # audio = resampy.resample(audio, sampling_rate, self.stft.sampling_rate)
                 raise ValueError("{} SR doesn't match target {} SR".format(
                     sampling_rate, self.stft.sampling_rate))
             audio_norm = audio / self.max_wav_value
