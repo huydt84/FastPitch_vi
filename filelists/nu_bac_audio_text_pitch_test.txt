@@ -1,0 +1,29 @@
+wavs/nu_bac_418.wav|pitch/nu_bac_418.pt|đích thị là quái vật
+wavs/nu_bac_352.wav|pitch/nu_bac_352.pt|thảo quả của nó sai nhất
+wavs/nu_bac2_163.wav|pitch/nu_bac2_163.pt|Những gia đình làm việc này như gia đình chị, đều chung một ý thức hồn nhiên rằng
+wavs/nu_bac2_48.wav|pitch/nu_bac2_48.pt|Thảo vứt ngay cọng rơm, mỉm cười
+wavs/nu_bac2_92.wav|pitch/nu_bac2_92.pt|linh cảm đó
+wavs/nu_bac2_156.wav|pitch/nu_bac2_156.pt|miếng cơm manh áo không nan giải lắm
+wavs/nu_bac2_415.wav|pitch/nu_bac2_415.pt|Cái tâm trạng cảm thấy mình mồ côi phân nửa, sẽ khác nhiều tâm trạng mồ côi hoàn toàn
+wavs/nu_bac2_1043.wav|pitch/nu_bac2_1043.pt|sang Mỹ ai làm gì thì làm, còn anh, cứ cho anh ngồi bên cái tủ lạnh suốt ngày
+wavs/nu_bac2_1827.wav|pitch/nu_bac2_1827.pt|Tôi không còn có dịp được gặp lại tham mưu trưởng.
+wavs/nu_bac2_1089.wav|pitch/nu_bac2_1089.pt|mà phải chịu cảnh như thế
+wavs/nu_bac2_1409.wav|pitch/nu_bac2_1409.pt|lạc rang gạo rang chăn chiên màn quần áo cho tôi
+wavs/nu_bac2_858.wav|pitch/nu_bac2_858.pt|ngày bé nhìn ngán lắm cơ!
+wavs/nu_bac_596.wav|pitch/nu_bac_596.pt|Đàn bà thiếu gì
+wavs/nu_bac2_365.wav|pitch/nu_bac2_365.pt|và loay hoay thu xếp công phu
+wavs/nu_bac_249.wav|pitch/nu_bac_249.pt|Người ta bảo Sở tham tiền, cũng mặc kệ
+wavs/nu_bac2_1996.wav|pitch/nu_bac2_1996.pt|Tiến có thông cảm với ni không?
+wavs/nu_bac_532.wav|pitch/nu_bac_532.pt|Bước ra đường
+wavs/nu_bac2_189.wav|pitch/nu_bac2_189.pt|Chị
+wavs/nu_bac2_1972.wav|pitch/nu_bac2_1972.pt|Thật thà khai báo thế, mà ly không giận.
+wavs/nu_bac_143.wav|pitch/nu_bac_143.pt|ấy thế mà vợ chết chưa đầy một năm
+wavs/nu_bac_604.wav|pitch/nu_bac_604.pt|Hơi thở đã mặn mùi tro
+wavs/nu_bac2_799.wav|pitch/nu_bac2_799.pt|Kiên nắm chặt bàn tay gầy guộc của Đầm, thổn thức
+wavs/nu_bac2_1753.wav|pitch/nu_bac2_1753.pt|thì con làm hùng chậm giờ mất.
+wavs/nu_bac2_603.wav|pitch/nu_bac2_603.pt|Bà bán quán lắc đầu,
+wavs/nu_bac2_1872.wav|pitch/nu_bac2_1872.pt|nhưng Ni có vẻ sung sướng không giấu được
+wavs/nu_bac2_1656.wav|pitch/nu_bac2_1656.pt|Tôi xoè hai bàn tay bê bết bùn ra
+wavs/nu_bac2_1927.wav|pitch/nu_bac2_1927.pt|Ni lay lay vai Tiến phụng phịu
+wavs/nu_bac_22.wav|pitch/nu_bac_22.pt|Khi ấy a Sở thấy lòng mình quặn đắng.
+wavs/nu_bac2_2012.wav|pitch/nu_bac2_2012.pt|Ni xin vài nơi rồi chưa được, Trước mắt, chắc phải tìm chỗ dạy kèm
