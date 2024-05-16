@@ -421,3 +421,220 @@ def batch_to_gpu(batch):
     y = [mel_padded, input_lengths, output_lengths]
     len_x = torch.sum(output_lengths)
     return (x, y, len_x)
+
+
+class TTSMultiDataset(torch.utils.data.Dataset):
+    """
+        1) loads audio,text pairs
+        2) normalizes text and converts them to sequences of one-hot vectors
+        3) computes mel-spectrograms from audio files.
+    """
+    def __init__(self,
+                 dataset_path,
+                 audiopaths_and_text,
+                 text_cleaners,
+                 n_mel_channels,
+                 symbol_set='english_basic',
+                 p_arpabet=1.0,
+                 n_speakers=1,
+                 load_mel_from_disk=True,
+                 load_pitch_from_disk=True,
+                 pitch_mean=214.72203,  # LJSpeech defaults
+                 pitch_std=65.72038,
+                 max_wav_value=None,
+                 sampling_rate=None,
+                 filter_length=None,
+                 hop_length=None,
+                 win_length=None,
+                 mel_fmin=None,
+                 mel_fmax=None,
+                 prepend_space_to_text=False,
+                 append_space_to_text=False,
+                 pitch_online_dir=None,
+                 betabinomial_online_dir=None,
+                 use_betabinomial_interpolator=True,
+                 pitch_online_method='pyin',
+                 **ignored):
+
+        # Expect a list of filenames
+        if type(audiopaths_and_text) is str:
+            audiopaths_and_text = [audiopaths_and_text]
+
+        if "nam_bac" in audiopaths_and_text[0]:
+            self.speaker = 0
+        elif "nam_nam" in audiopaths_and_text[0]:
+            self.speaker = 1
+        elif "nu_bac" in audiopaths_and_text[0]:
+            self.speaker = 2
+        elif "nu_nam" in audiopaths_and_text[0]:
+            self.speaker = 3
+        elif "nu_trung" in audiopaths_and_text[0]:
+            self.speaker = 4
+        else:
+            raise ValueError(f"Can't get speaker from {audiopaths_and_text[0]}")
+
+        self.dataset_path = dataset_path
+        self.audiopaths_and_text = load_filepaths_and_text(
+            dataset_path, audiopaths_and_text,
+            has_speakers=(n_speakers > 1))
+        self.load_mel_from_disk = load_mel_from_disk
+        if not load_mel_from_disk:
+            self.max_wav_value = max_wav_value
+            self.sampling_rate = sampling_rate
+            self.stft = layers.TacotronSTFT(
+                filter_length, hop_length, win_length,
+                n_mel_channels, sampling_rate, mel_fmin, mel_fmax)
+        self.load_pitch_from_disk = load_pitch_from_disk
+
+        self.prepend_space_to_text = prepend_space_to_text
+        self.append_space_to_text = append_space_to_text
+
+        assert p_arpabet == 0.0 or p_arpabet == 1.0, (
+            'Only 0.0 and 1.0 p_arpabet is currently supported. '
+            'Variable probability breaks caching of betabinomial matrices.')
+
+        self.tp = get_text_processing(symbol_set, text_cleaners, p_arpabet)
+        self.n_speakers = n_speakers
+        self.pitch_tmp_dir = pitch_online_dir
+        self.f0_method = pitch_online_method
+        self.betabinomial_tmp_dir = betabinomial_online_dir
+        self.use_betabinomial_interpolator = use_betabinomial_interpolator
+
+        if use_betabinomial_interpolator:
+            self.betabinomial_interpolator = BetaBinomialInterpolator()
+
+        expected_columns = (2 + int(load_pitch_from_disk) + (n_speakers > 1))
+
+        assert not (load_pitch_from_disk and self.pitch_tmp_dir is not None)
+
+        if len(self.audiopaths_and_text[0]) < expected_columns:
+            raise ValueError(f'Expected {expected_columns} columns in audiopaths file. '
+                             'The format is <mel_or_wav>|[<pitch>|]<text>[|<speaker_id>]')
+
+        if len(self.audiopaths_and_text[0]) > expected_columns:
+            print('WARNING: Audiopaths file has more columns than expected')
+
+        to_tensor = lambda x: torch.Tensor([x]) if type(x) is float else x
+        self.pitch_mean = to_tensor(pitch_mean)
+        self.pitch_std = to_tensor(pitch_std)
+
+    def __getitem__(self, index):
+        # Separate filename and text
+        if self.n_speakers > 1:
+            audiopath, *extra, text = self.audiopaths_and_text[index]
+            speaker = self.speaker
+        else:
+            audiopath, *extra, text = self.audiopaths_and_text[index]
+            speaker = self.speaker
+
+        mel = self.get_mel(audiopath)
+        text = self.get_text(text)
+        pitch = self.get_pitch(index, mel.size(-1))
+        energy = torch.norm(mel.float(), dim=0, p=2)
+        attn_prior = self.get_prior(index, mel.shape[1], text.shape[0])
+
+        assert pitch.size(-1) == mel.size(-1)
+
+        # No higher formants?
+        if len(pitch.size()) == 1:
+            pitch = pitch[None, :]
+
+        return (text, mel, len(text), pitch, energy, speaker, attn_prior,
+                audiopath)
+
+    def __len__(self):
+        return len(self.audiopaths_and_text)
+
+    def get_mel(self, filename):
+        if not self.load_mel_from_disk:
+            audio, sampling_rate = load_wav_to_torch(filename, force_sampling_rate=self.stft.sampling_rate)
+            if sampling_rate != self.stft.sampling_rate:
+                # audio = resampy.resample(audio, sampling_rate, self.stft.sampling_rate)
+                raise ValueError("{} SR doesn't match target {} SR".format(
+                    sampling_rate, self.stft.sampling_rate))
+            audio_norm = audio / self.max_wav_value
+            audio_norm = audio_norm.unsqueeze(0)
+            audio_norm = torch.autograd.Variable(audio_norm,
+                                                 requires_grad=False)
+            melspec = self.stft.mel_spectrogram(audio_norm)
+            melspec = torch.squeeze(melspec, 0)
+        else:
+            melspec = torch.load(filename)
+            # assert melspec.size(0) == self.stft.n_mel_channels, (
+            #     'Mel dimension mismatch: given {}, expected {}'.format(
+            #         melspec.size(0), self.stft.n_mel_channels))
+
+        return melspec
+
+    def get_text(self, text):
+        text = self.tp.encode_text(text)
+        space = [self.tp.encode_text("A A")[1]]
+
+        if self.prepend_space_to_text:
+            text = space + text
+
+        if self.append_space_to_text:
+            text = text + space
+
+        return torch.LongTensor(text)
+
+    def get_prior(self, index, mel_len, text_len):
+
+        if self.use_betabinomial_interpolator:
+            return torch.from_numpy(self.betabinomial_interpolator(mel_len,
+                                                                   text_len))
+
+        if self.betabinomial_tmp_dir is not None:
+            audiopath, *_ = self.audiopaths_and_text[index]
+            fname = Path(audiopath).relative_to(self.dataset_path)
+            fname = fname.with_suffix('.pt')
+            cached_fpath = Path(self.betabinomial_tmp_dir, fname)
+
+            if cached_fpath.is_file():
+                return torch.load(cached_fpath)
+
+        attn_prior = beta_binomial_prior_distribution(text_len, mel_len)
+
+        if self.betabinomial_tmp_dir is not None:
+            cached_fpath.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(attn_prior, cached_fpath)
+
+        return attn_prior
+
+    def get_pitch(self, index, mel_len=None):
+        audiopath, *fields = self.audiopaths_and_text[index]
+
+        if self.n_speakers > 1:
+            spk = self.speaker
+        else:
+            spk = 0
+
+        if self.load_pitch_from_disk:
+            pitchpath = fields[0]
+            pitch = torch.load(pitchpath)
+            if self.pitch_mean is not None:
+                assert self.pitch_std is not None
+                pitch = normalize_pitch(pitch, self.pitch_mean, self.pitch_std)
+            return pitch
+
+        if self.pitch_tmp_dir is not None:
+            fname = Path(audiopath).relative_to(self.dataset_path)
+            fname_method = fname.with_suffix('.pt')
+            cached_fpath = Path(self.pitch_tmp_dir, fname_method)
+            if cached_fpath.is_file():
+                return torch.load(cached_fpath)
+
+        # No luck so far - calculate
+        wav = audiopath
+        if not wav.endswith('.wav'):
+            wav = re.sub('/mels/', '/wavs/', wav)
+            wav = re.sub('.pt$', '.wav', wav)
+
+        pitch_mel = estimate_pitch(wav, mel_len, self.f0_method,
+                                   self.pitch_mean, self.pitch_std)
+
+        if self.pitch_tmp_dir is not None and not cached_fpath.is_file():
+            cached_fpath.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(pitch_mel, cached_fpath)
+
+        return pitch_mel

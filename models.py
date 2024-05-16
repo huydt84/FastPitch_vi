@@ -20,7 +20,7 @@ import torch
 
 from common.text.symbols import get_symbols, get_pad_idx
 from common.utils import DefaultAttrDict, AttrDict
-from fastpitch.model import FastPitch
+from fastpitch.model import FastPitch, MultiFastPitch
 from fastpitch.model_jit import FastPitchJIT
 from hifigan.models import Generator
 
@@ -60,6 +60,8 @@ def get_model(model_name, model_config, device, bn_uniform_init=False,
             model = FastPitchJIT(**model_config)
         else:
             model = FastPitch(**model_config)
+    elif model_name == 'MultiFastPitch':
+        model = MultiFastPitch(**model_config)
 
     elif model_name == 'HiFi-GAN':
         model = Generator(model_config)
