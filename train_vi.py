@@ -73,7 +73,7 @@ def parse_args(parser):
                        help='Milestone checkpoints to keep from removing')
     train.add_argument('--resume', action='store_true',
                        help='Resume training from the last checkpoint')
-    train.add_argument('--seed', type=int, default=1234,
+    train.add_argument('--seed', type=int, default=42,
                        help='Seed for PyTorch random number generators')
     train.add_argument('--amp', action='store_true',
                        help='Enable AMP')
@@ -99,7 +99,7 @@ def parse_args(parser):
                        help='Initialize model weights with a pre-trained ckpt')
 
     opt = parser.add_argument_group('optimization setup')
-    opt.add_argument('--optimizer', type=str, default='lamb',
+    opt.add_argument('--optimizer', type=str, default='adam',
                      help='Optimization algorithm')
     opt.add_argument('-lr', '--learning-rate', type=float, required=True,
                      help='Learing rate')
@@ -124,22 +124,22 @@ def parse_args(parser):
     data.add_argument('--validation-files', type=str, nargs='*',
                       required=True, help='Paths to validation filelists')
     data.add_argument('--text-cleaners', nargs='*',
-                      default=['english_cleaners'], type=str,
+                      default=['vietnamese_cleaner'], type=str,
                       help='Type of text cleaners for input text')
-    data.add_argument('--symbol-set', type=str, default='english_basic',
+    data.add_argument('--symbol-set', type=str, default='vietnamese_basic',
                       help='Define symbol set for input text')
     data.add_argument('--p-arpabet', type=float, default=0.0,
                       help='Probability of using arpabets instead of graphemes '
                            'for each word; set 0 for pure grapheme training')
     data.add_argument('--heteronyms-path', type=str, default='cmudict/heteronyms',
                       help='Path to the list of heteronyms')
-    data.add_argument('--cmudict-path', type=str, default='cmudict/cmudict-0.7b',
+    data.add_argument('--cmudict-path', type=str, default='cmudict/vnIPA.dict',
                       help='Path to the pronouncing dictionary')
     data.add_argument('--prepend-space-to-text', action='store_true',
                       help='Capture leading silence with a space token')
     data.add_argument('--append-space-to-text', action='store_true',
                       help='Capture trailing silence with a space token')
-    data.add_argument('--num-workers', type=int, default=6,
+    data.add_argument('--num-workers', type=int, default=2,
                       help='Subprocesses for train and val DataLoaders')
     data.add_argument('--trainloader-repeats', type=int, default=100,
                       help='Repeats the dataset to prolong epochs')
@@ -290,8 +290,8 @@ def main():
 
     parser = models.parse_model_args('FastPitch', parser)
     args, unk_args = parser.parse_known_args()
-    if len(unk_args) > 0:
-        raise ValueError(f'Invalid options {unk_args}')
+    # if len(unk_args) > 0:
+    #     raise ValueError(f'Invalid options {unk_args}')
 
     torch.backends.cudnn.benchmark = args.cudnn_benchmark
 
@@ -387,6 +387,10 @@ def main():
         epoch_iter = 1
         for batch, accum_step in zip(train_loader,
                                      cycle(range(1, args.grad_accumulation + 1))):
+            # if epoch_iter == 11:
+            #     epoch_iter += 1
+            #     total_iter += 1
+            #     continue
             if accum_step == 1:
                 adjust_learning_rate(total_iter, optimizer, args.learning_rate,
                                      args.warmup_steps)

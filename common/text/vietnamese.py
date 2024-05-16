@@ -40,7 +40,7 @@ class VNDict:
     if isinstance(file_or_path, str):
       if not Path(file_or_path).exists():
         raise FileNotFoundError
-
+      print(file_or_path)
       with open(file_or_path, encoding='utf-8') as f:
         entries = _parse_vnipa(f)
 

@@ -3,17 +3,17 @@
 export OMP_NUM_THREADS=1
 
 : ${NUM_GPUS:=1}
-: ${BATCH_SIZE:=8}
-: ${GRAD_ACCUMULATION:=8}
+: ${BATCH_SIZE:=16}
+: ${GRAD_ACCUMULATION:=4}
 : ${OUTPUT_DIR:="./output"}
 : ${LOG_FILE:=$OUTPUT_DIR/nvlog.json}
 : ${DATASET_PATH:=nam_bac_nsut-ha-phuong}
 : ${TRAIN_FILELIST:=filelists/nam_bac_audio_text_pitch_train.txt}
 : ${VAL_FILELIST:=filelists/nam_bac_audio_text_pitch_val.txt}
-: ${AMP:=false}
+: ${AMP:=true}
 : ${SEED:=""}
 
-: ${LEARNING_RATE:=0.1}
+: ${LEARNING_RATE:=0.01}
 
 # Adjust these when the amount of data changes
 : ${EPOCHS:=100}
@@ -51,7 +51,7 @@ ARGS+=" --training-files $TRAIN_FILELIST"
 ARGS+=" --validation-files $VAL_FILELIST"
 ARGS+=" -bs $BATCH_SIZE"
 ARGS+=" --grad-accumulation $GRAD_ACCUMULATION"
-ARGS+=" --optimizer lamb"
+ARGS+=" --optimizer adamw"
 ARGS+=" --epochs $EPOCHS"
 ARGS+=" --epochs-per-checkpoint $EPOCHS_PER_CHECKPOINT"
 
