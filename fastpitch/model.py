@@ -483,8 +483,8 @@ class MultiFastPitch(nn.Module):
             padding=int((pitch_embedding_kernel_size - 1) / 2))
 
         # Store values precomputed for training data within the model
-        self.register_buffer('pitch_mean', torch.zeros(1))
-        self.register_buffer('pitch_std', torch.zeros(1))
+        self.register_buffer('pitch_mean', torch.zeros(5))
+        self.register_buffer('pitch_std', torch.zeros(5))
 
         self.energy_conditioning = energy_conditioning
         if energy_conditioning:
@@ -656,18 +656,12 @@ class MultiFastPitch(nn.Module):
             #     mean, std = 218.14, 67.24
             # else:
             #     mean, std = self.pitch_mean[0], self.pitch_std[0]
-            if speaker == 0:
+            if self.pitch_std[0] == 0.0:
                 mean, std = 124.157947, 33.519135
-            elif speaker == 1:
-                mean, std = 173.203161, 45.219384
-            elif speaker == 2:
-                mean, std = 189.114275, 59.541185
-            elif speaker == 3:
-                mean, std = 209.345993, 49.83871
-            elif speaker == 4:
-                mean, std = 236.933387, 44.720869
+            elif speaker in [0, 1, 2, 3, 4]:
+                mean, std = self.pitch_mean[speaker], self.pitch_std[speaker]
             else:
-                mean, std = self.pitch_mean[0], self.pitch_std[0]
+                raise ValueError(f"Speaker = {speaker} not supported!")
             pitch_pred = pitch_transform(pitch_pred, enc_mask.sum(dim=(1,2)),
                                          mean, std)
         if pitch_tgt is None:

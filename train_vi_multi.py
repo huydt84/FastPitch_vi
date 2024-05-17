@@ -56,7 +56,15 @@ from fastpitch.loss_function import FastPitchLoss
 def parse_args(parser):
     parser.add_argument('-o', '--output', type=str, required=True,
                         help='Directory to save checkpoints')
-    parser.add_argument('-d', '--dataset-path', type=str, default='./',
+    parser.add_argument('-d', '--dataset-path0', type=str, default='./',
+                        help='Path to dataset')
+    parser.add_argument('-d', '--dataset-path1', type=str, default='./',
+                        help='Path to dataset')
+    parser.add_argument('-d', '--dataset-path2', type=str, default='./',
+                        help='Path to dataset')
+    parser.add_argument('-d', '--dataset-path3', type=str, default='./',
+                        help='Path to dataset')
+    parser.add_argument('-d', '--dataset-path4', type=str, default='./',
                         help='Path to dataset')
     parser.add_argument('--log-file', type=str, default=None,
                         help='Path to a DLLogger log file')
@@ -119,9 +127,25 @@ def parse_args(parser):
                      default=1.0, help='Rescale alignment loss')
 
     data = parser.add_argument_group('dataset parameters')
-    data.add_argument('--training-files', type=str, nargs='*', required=True,
+    data.add_argument('--training-files0', type=str, nargs='*', required=True,
                       help='Paths to training filelists.')
-    data.add_argument('--validation-files', type=str, nargs='*',
+    data.add_argument('--validation-files0', type=str, nargs='*',
+                      required=True, help='Paths to validation filelists')
+    data.add_argument('--training-files1', type=str, nargs='*', required=True,
+                      help='Paths to training filelists.')
+    data.add_argument('--validation-files1', type=str, nargs='*',
+                      required=True, help='Paths to validation filelists')
+    data.add_argument('--training-files2', type=str, nargs='*', required=True,
+                      help='Paths to training filelists.')
+    data.add_argument('--validation-files2', type=str, nargs='*',
+                      required=True, help='Paths to validation filelists')
+    data.add_argument('--training-files3', type=str, nargs='*', required=True,
+                      help='Paths to training filelists.')
+    data.add_argument('--validation-files3', type=str, nargs='*',
+                      required=True, help='Paths to validation filelists')
+    data.add_argument('--training-files4', type=str, nargs='*', required=True,
+                      help='Paths to training filelists.')
+    data.add_argument('--validation-files4', type=str, nargs='*',
                       required=True, help='Paths to validation filelists')
     data.add_argument('--text-cleaners', nargs='*',
                       default=['vietnamese_cleaner'], type=str,
@@ -155,9 +179,25 @@ def parse_args(parser):
                       help='Calculate pitch on the fly during trainig')
     cond.add_argument('--pitch-online-dir', type=str, default=None,
                       help='A directory for storing pitch calculated on-line')
-    cond.add_argument('--pitch-mean', type=float, default=214.72203,
+    cond.add_argument('--pitch-mean0', type=float, default=214.72203,
                       help='Normalization value for pitch')
-    cond.add_argument('--pitch-std', type=float, default=65.72038,
+    cond.add_argument('--pitch-std0', type=float, default=65.72038,
+                      help='Normalization value for pitch')
+    cond.add_argument('--pitch-mean1', type=float, default=214.72203,
+                      help='Normalization value for pitch')
+    cond.add_argument('--pitch-std1', type=float, default=65.72038,
+                      help='Normalization value for pitch')
+    cond.add_argument('--pitch-mean2', type=float, default=214.72203,
+                      help='Normalization value for pitch')
+    cond.add_argument('--pitch-std2', type=float, default=65.72038,
+                      help='Normalization value for pitch')
+    cond.add_argument('--pitch-mean3', type=float, default=214.72203,
+                      help='Normalization value for pitch')
+    cond.add_argument('--pitch-std3', type=float, default=65.72038,
+                      help='Normalization value for pitch')
+    cond.add_argument('--pitch-mean4', type=float, default=214.72203,
+                      help='Normalization value for pitch')
+    cond.add_argument('--pitch-std4', type=float, default=65.72038,
                       help='Normalization value for pitch')
     cond.add_argument('--load-mel-from-disk', action='store_true',
                       help='Use mel-spectrograms cache on the disk')  # XXX
@@ -311,8 +351,20 @@ def main():
     attention_kl_loss = AttentionBinarizationLoss()
 
     # Store pitch mean/std as params to translate from Hz during inference
-    model.pitch_mean[0] = args.pitch_mean
-    model.pitch_std[0] = args.pitch_std
+    model.pitch_mean[0] = args.pitch_mean0
+    model.pitch_std[0] = args.pitch_std0
+
+    model.pitch_mean[1] = args.pitch_mean1
+    model.pitch_std[1] = args.pitch_std1
+
+    model.pitch_mean[2] = args.pitch_mean2
+    model.pitch_std[2] = args.pitch_std2
+
+    model.pitch_mean[3] = args.pitch_mean3
+    model.pitch_std[3] = args.pitch_std3
+
+    model.pitch_mean[4] = args.pitch_mean4
+    model.pitch_std[4] = args.pitch_std4
 
     kw = dict(lr=args.learning_rate, betas=(0.9, 0.98), eps=1e-9,
               weight_decay=args.weight_decay)
@@ -350,59 +402,67 @@ def main():
         prepare_tmp(args.pitch_online_dir)
 
     # nam_bac
-    trainset0 = TTSMultiDataset(audiopaths_and_text=args.training_files, **vars(args))
-    valset0 = TTSMultiDataset(audiopaths_and_text=args.validation_files, **vars(args))
+    trainset0 = TTSMultiDataset(dataset_path=args.dataset_path0, 
+                                audiopaths_and_text=args.training_files0,
+                                pitch_mean=args.pitch_mean0,
+                                pitch_std=args.pitch_std0,
+                                **vars(args))
+    valset0 = TTSMultiDataset(dataset_path=args.dataset_path0, 
+                                audiopaths_and_text=args.validation_files0,
+                                pitch_mean=args.pitch_mean0,
+                                pitch_std=args.pitch_std0,
+                                **vars(args))
     ensure_disjoint(trainset0, valset0)
 
     # nam_nam
-    trainset1 = TTSMultiDataset(dataset_path="nam_nam_vu-quang-hung", 
-                                audiopaths_and_text="filelists/nam_nam_audio_text_pitch_train.txt",
-                                pitch_mean=173.203161,
-                                pitch_std=45.219384, 
+    trainset1 = TTSMultiDataset(dataset_path=args.dataset_path1, 
+                                audiopaths_and_text=args.training_files1,
+                                pitch_mean=args.pitch_mean1,
+                                pitch_std=args.pitch_std1,
                                 **vars(args))
-    valset1 = TTSMultiDataset(dataset_path="nam_nam_vu-quang-hung", 
-                                audiopaths_and_text="filelists/nam_nam_audio_text_pitch_val.txt",
-                                pitch_mean=173.203161,
-                                pitch_std=45.219384, 
+    valset1 = TTSMultiDataset(dataset_path=args.dataset_path1, 
+                                audiopaths_and_text=args.validation_files1,
+                                pitch_mean=args.pitch_mean1,
+                                pitch_std=args.pitch_std1,
                                 **vars(args))
     ensure_disjoint(trainset1, valset1)
 
     # nu_bac
-    trainset2 = TTSMultiDataset(dataset_path="nu_bac-nsut-hoang-yen", 
-                                audiopaths_and_text="filelists/nu_bac_audio_text_pitch_train.txt",
-                                pitch_mean=189.114275,
-                                pitch_std=59.541185, 
+    trainset2 = TTSMultiDataset(dataset_path=args.dataset_path2, 
+                                audiopaths_and_text=args.training_files2,
+                                pitch_mean=args.pitch_mean2,
+                                pitch_std=args.pitch_std2,
                                 **vars(args))
-    valset2 = TTSMultiDataset(dataset_path="nu_bac-nsut-hoang-yen", 
-                                audiopaths_and_text="filelists/nu_bac_audio_text_pitch_val.txt",
-                                pitch_mean=189.114275,
-                                pitch_std=59.541185, 
+    valset2 = TTSMultiDataset(dataset_path=args.dataset_path2, 
+                                audiopaths_and_text=args.validation_files2,
+                                pitch_mean=args.pitch_mean2,
+                                pitch_std=args.pitch_std2,
                                 **vars(args))
     ensure_disjoint(trainset2, valset2)
 
     # nu_nam
-    trainset3 = TTSMultiDataset(dataset_path="nu_nam_kenh-co-trinh", 
-                                audiopaths_and_text="filelists/nu_nam_audio_text_pitch_train.txt",
-                                pitch_mean=209.345993,
-                                pitch_std=49.83871, 
+    trainset3 = TTSMultiDataset(dataset_path=args.dataset_path3, 
+                                audiopaths_and_text=args.training_files3,
+                                pitch_mean=args.pitch_mean3,
+                                pitch_std=args.pitch_std3,
                                 **vars(args))
-    valset3 = TTSMultiDataset(dataset_path="nu_nam_kenh-co-trinh", 
-                                audiopaths_and_text="filelists/nu_nam_audio_text_pitch_val.txt",
-                                pitch_mean=209.345993,
-                                pitch_std=49.83871, 
+    valset3 = TTSMultiDataset(dataset_path=args.dataset_path3, 
+                                audiopaths_and_text=args.validation_files3,
+                                pitch_mean=args.pitch_mean3,
+                                pitch_std=args.pitch_std3,
                                 **vars(args))
     ensure_disjoint(trainset3, valset3)
 
     # nu_trung
-    trainset4 = TTSMultiDataset(dataset_path="nu_trung_nichi", 
-                                audiopaths_and_text="filelists/nu_trung_audio_text_pitch_train.txt",
-                                pitch_mean=236.933387,
-                                pitch_std=44.720869, 
+    trainset4 = TTSMultiDataset(dataset_path=args.dataset_path4, 
+                                audiopaths_and_text=args.training_files4,
+                                pitch_mean=args.pitch_mean4,
+                                pitch_std=args.pitch_std4,
                                 **vars(args))
-    valset4 = TTSMultiDataset(dataset_path="nu_trung_nichi", 
-                                audiopaths_and_text="filelists/nu_trung_audio_text_pitch_val.txt",
-                                pitch_mean=236.933387,
-                                pitch_std=44.720869, 
+    valset4 = TTSMultiDataset(dataset_path=args.dataset_path4, 
+                                audiopaths_and_text=args.validation_files4,
+                                pitch_mean=args.pitch_mean4,
+                                pitch_std=args.pitch_std4,
                                 **vars(args))
     ensure_disjoint(trainset4, valset4)
 
