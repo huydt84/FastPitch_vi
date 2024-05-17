@@ -31,6 +31,7 @@ import os
 import time
 from collections import defaultdict, OrderedDict
 from itertools import cycle
+import wandb
 
 import numpy as np
 import torch
@@ -262,6 +263,9 @@ def validate(model, epoch, total_iter, criterion, val_loader,
             ('frames/s', val_num_frames / val_meta['took']),
             ('took', val_meta['took'])]),
         )
+    
+    # Log to wandb
+    wandb.log({"val_loss": val_meta['loss'].item(), "val_mel_loss": val_meta['mel_loss'].item()})
 
     if was_training:
         model.train()
@@ -305,6 +309,19 @@ def apply_multi_tensor_ema(decay, model_weights, ema_weights, overflow_buf):
 
 
 def main():
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="multi-fastpitch",
+
+        # track hyperparameters and run metadata
+        config={
+            "learning_rate": 0.01,
+            "architecture": "MultiFastPitch",
+            "dataset": "Custom 5-voice dataset",
+            "epochs": 100,
+        }
+    )
+
     parser = argparse.ArgumentParser(description='PyTorch FastPitch Training',
                                      allow_abbrev=False)
     parser = parse_args(parser)
@@ -591,6 +608,9 @@ def main():
                         ('lrate', optimizer.param_groups[0]['lr'])]),
                 )
 
+                # Log to wandb
+                wandb.log({"loss": iter_loss, "mel_loss": iter_mel_loss, "kl_loss": iter_kl_loss})
+
                 iter_loss = 0
                 iter_num_frames = 0
                 iter_meta = {}
@@ -633,6 +653,8 @@ def main():
             data=bmark_stats.get(args.benchmark_epochs_num))
 
     validate(model, None, total_iter, criterion, val_loader, batch_to_gpu)
+    
+    wandb.finish()
 
 
 if __name__ == '__main__':

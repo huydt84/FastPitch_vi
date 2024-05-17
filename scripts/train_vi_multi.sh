@@ -4,7 +4,7 @@ export OMP_NUM_THREADS=1
 
 : ${NUM_GPUS:=1}
 : ${BATCH_SIZE:=16}
-: ${GRAD_ACCUMULATION:=4}
+: ${GRAD_ACCUMULATION:=8}
 : ${OUTPUT_DIR:="./output_multi"}
 : ${LOG_FILE:=$OUTPUT_DIR/nvlog.json}
 : ${DATASET_PATH:=nam_bac_nsut-ha-phuong}
@@ -17,7 +17,7 @@ export OMP_NUM_THREADS=1
 
 # Adjust these when the amount of data changes
 : ${EPOCHS:=100}
-: ${EPOCHS_PER_CHECKPOINT:=10}
+: ${EPOCHS_PER_CHECKPOINT:=2}
 : ${WARMUP_STEPS:=1000}
 : ${KL_LOSS_WARMUP:=100}
 
@@ -80,7 +80,7 @@ ARGS+=" --grad-clip-thresh 1000.0"
 ARGS+=" --dur-predictor-loss-scale 0.1"
 ARGS+=" --pitch-predictor-loss-scale 0.1"
 ARGS+=" --trainloader-repeats 100"
-ARGS+=" --validation-freq 10"
+ARGS+=" --validation-freq 1"
 
 # Autoalign & new features
 ARGS+=" --kl-loss-start-epoch 0"

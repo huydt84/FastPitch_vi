@@ -5,4 +5,5 @@ numpy
 pynvml==11.0.0
 scipy
 tensorboardX==2.0
+wandb
 git+https://github.com/NVIDIA/dllogger@v1.0.0#egg=dllogger
