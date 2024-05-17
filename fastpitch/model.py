@@ -423,7 +423,7 @@ class MultiFastPitch(nn.Module):
                  p_energy_predictor_dropout, energy_predictor_n_layers,
                  energy_embedding_kernel_size,
                  n_speakers, speaker_emb_weight, pitch_conditioning_formants=1):
-        super(FastPitch, self).__init__()
+        super(MultiFastPitch, self).__init__()
 
         self.encoder = FFTransformer(
             n_layer=in_fft_n_layers, n_head=in_fft_n_heads,

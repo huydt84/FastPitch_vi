@@ -503,16 +503,16 @@ class TTSMultiDataset(torch.utils.data.Dataset):
         if use_betabinomial_interpolator:
             self.betabinomial_interpolator = BetaBinomialInterpolator()
 
-        expected_columns = (2 + int(load_pitch_from_disk) + (n_speakers > 1))
+        # expected_columns = (2 + int(load_pitch_from_disk) + (n_speakers > 1))
 
         assert not (load_pitch_from_disk and self.pitch_tmp_dir is not None)
 
-        if len(self.audiopaths_and_text[0]) < expected_columns:
-            raise ValueError(f'Expected {expected_columns} columns in audiopaths file. '
-                             'The format is <mel_or_wav>|[<pitch>|]<text>[|<speaker_id>]')
+        # if len(self.audiopaths_and_text[0]) < expected_columns:
+        #     raise ValueError(f'Expected {expected_columns} columns in audiopaths file. '
+        #                      'The format is <mel_or_wav>|[<pitch>|]<text>[|<speaker_id>]')
 
-        if len(self.audiopaths_and_text[0]) > expected_columns:
-            print('WARNING: Audiopaths file has more columns than expected')
+        # if len(self.audiopaths_and_text[0]) > expected_columns:
+        #     print('WARNING: Audiopaths file has more columns than expected')
 
         to_tensor = lambda x: torch.Tensor([x]) if type(x) is float else x
         self.pitch_mean = to_tensor(pitch_mean)
@@ -526,6 +526,7 @@ class TTSMultiDataset(torch.utils.data.Dataset):
         else:
             audiopath, *extra, text = self.audiopaths_and_text[index]
             speaker = self.speaker
+        print(self.audiopaths_and_text[index])
 
         mel = self.get_mel(audiopath)
         text = self.get_text(text)
