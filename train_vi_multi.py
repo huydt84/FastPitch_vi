@@ -56,15 +56,15 @@ from fastpitch.loss_function import FastPitchLoss
 def parse_args(parser):
     parser.add_argument('-o', '--output', type=str, required=True,
                         help='Directory to save checkpoints')
-    parser.add_argument('-d', '--dataset-path0', type=str, default='./',
+    parser.add_argument('-d0', '--dataset-path0', type=str, default='./',
                         help='Path to dataset')
-    parser.add_argument('-d', '--dataset-path1', type=str, default='./',
+    parser.add_argument('-d1', '--dataset-path1', type=str, default='./',
                         help='Path to dataset')
-    parser.add_argument('-d', '--dataset-path2', type=str, default='./',
+    parser.add_argument('-d2', '--dataset-path2', type=str, default='./',
                         help='Path to dataset')
-    parser.add_argument('-d', '--dataset-path3', type=str, default='./',
+    parser.add_argument('-d3', '--dataset-path3', type=str, default='./',
                         help='Path to dataset')
-    parser.add_argument('-d', '--dataset-path4', type=str, default='./',
+    parser.add_argument('-d4', '--dataset-path4', type=str, default='./',
                         help='Path to dataset')
     parser.add_argument('--log-file', type=str, default=None,
                         help='Path to a DLLogger log file')
