@@ -526,7 +526,6 @@ class TTSMultiDataset(torch.utils.data.Dataset):
         else:
             audiopath, *extra, text = self.audiopaths_and_text[index]
             speaker = self.speaker
-        print(self.audiopaths_and_text[index])
 
         mel = self.get_mel(audiopath)
         text = self.get_text(text)

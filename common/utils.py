@@ -84,10 +84,11 @@ def load_wav_to_torch(full_path, force_sampling_rate=None):
 def load_filepaths_and_text(dataset_path, fnames, has_speakers=False, split="|"):
     def split_line(root, line):
         parts = line.strip().split(split)
-        if has_speakers:
-            paths, non_paths = parts[:-2], parts[-2:]
-        else:
-            paths, non_paths = parts[:-1], parts[-1:]
+        # if has_speakers:
+        #     paths, non_paths = parts[:-2], parts[-2:]
+        # else:
+        #     paths, non_paths = parts[:-1], parts[-1:]
+        paths, non_paths = parts[:-1], parts[-1:]   # Cause my file format is still the same
         return tuple(str(Path(root, p)) for p in paths) + tuple(non_paths)
 
     fpaths_and_text = []
